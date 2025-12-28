@@ -1,8 +1,7 @@
 import { createStore } from 'zustand';
 import { Layout as ResizableLayoutSchema } from 'react-resizable-panels';
-import { mapToObject } from '@/lib/utils';
-import { createContext } from 'react';
-import { getStoredLayout, Layout, LAYOUT_GROUP_IDS } from './layouts';
+import { createContext, useContext } from 'react';
+import { getStoredLayout, Layout } from './layouts';
 
 type LayoutStore = {
   activeLayout: Layout;
@@ -32,8 +31,8 @@ export const createLayoutStore = (
     defaultLayouts: storedLayouts,
     setActiveLayout: (layout: Layout) => {
       const { activeLayout: oldLayout, defaultLayouts } = get();
-
       const fromStorage = getStoredLayout(oldLayout, getCookie);
+      document.cookie = `layout=${layout}`;
 
       set({
         activeLayout: layout,
@@ -46,4 +45,14 @@ export const createLayoutStore = (
   }));
 };
 
-export const LayoutContext = createContext<LayoutStore | null>(null);
+export const LayoutContext = createContext<ReturnType<
+  typeof createLayoutStore
+> | null>(null);
+
+export const useLayouts = () => {
+  const store = useContext(LayoutContext);
+  if (!store) {
+    throw new Error('useLayouts must be used within a LayoutProvider');
+  }
+  return store;
+};

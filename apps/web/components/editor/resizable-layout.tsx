@@ -6,14 +6,16 @@ import {
   ResizablePanelGroup,
 } from '../ui/resizable';
 import { Layout as ResizableLayoutSchema } from 'react-resizable-panels';
-import { Group, Panel } from '@/stores/ui/layouts';
+import { Group, Layout, Panel } from '@/stores/ui/layouts';
 
 export function RecursiveGroup({
   panel,
   layouts,
+  layoutId,
 }: {
   panel: Panel | Group;
   layouts: Record<string, ResizableLayoutSchema | undefined>;
+  layoutId: Layout;
 }) {
   if (panel.type === 'panel') {
     return (
@@ -30,13 +32,18 @@ export function RecursiveGroup({
         orientation={panel.orientation}
         defaultLayout={layouts[panel.id] ?? panel.defaultLayout}
         onLayoutChange={(layout) => {
-          document.cookie = `${panel.id}=${JSON.stringify(layout)}`;
+          document.cookie = `${layoutId}-${panel.id}=${JSON.stringify(layout)}`;
         }}
       >
         {panel.panels.map((panel, index) => (
           <React.Fragment key={panel.id}>
             {index > 0 && <ResizableHandle />}
-            <RecursiveGroup key={panel.id} panel={panel} layouts={layouts} />
+            <RecursiveGroup
+              key={panel.id}
+              panel={panel}
+              layouts={layouts}
+              layoutId={layoutId}
+            />
           </React.Fragment>
         ))}
       </ResizablePanelGroup>
@@ -47,8 +54,10 @@ export function RecursiveGroup({
 export function ResizableLayout({
   root,
   layouts,
+  layoutId,
 }: {
   root: Group;
+  layoutId: Layout;
   layouts: Record<string, ResizableLayoutSchema | undefined>;
 }) {
   return (
@@ -57,13 +66,18 @@ export function ResizableLayout({
       orientation={root.orientation}
       defaultLayout={layouts[root.id] ?? root.defaultLayout}
       onLayoutChange={(layout) => {
-        document.cookie = `${root.id}=${JSON.stringify(layout)}`;
+        document.cookie = `${layoutId}-${root.id}=${JSON.stringify(layout)}`;
       }}
     >
       {root.panels.map((panel, index) => (
         <React.Fragment key={panel.id}>
           {index > 0 && <ResizableHandle />}
-          <RecursiveGroup key={panel.id} panel={panel} layouts={layouts} />
+          <RecursiveGroup
+            key={panel.id}
+            panel={panel}
+            layouts={layouts}
+            layoutId={layoutId}
+          />
         </React.Fragment>
       ))}
     </ResizablePanelGroup>

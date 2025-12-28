@@ -1,10 +1,10 @@
 import { mapToObject } from '@/lib/utils';
 import { Layout as ResizableLayoutSchema } from 'react-resizable-panels';
 
-function DefaultPanel() {
+function DefaultPanel({ id }: { id: string }) {
   return (
     <div className="flex h-full items-center justify-center p-6 bg-muted rounded-lg">
-      <span className="font-semibold">Panel</span>
+      <span className="font-semibold">{id}</span>
     </div>
   );
 }
@@ -15,7 +15,7 @@ export function getStoredLayout(
 ) {
   const groupIds = LAYOUT_GROUP_IDS[layoutId];
   const layoutSizes = mapToObject(groupIds, (item) => {
-    const defaultLayoutString = getCookie(item);
+    const defaultLayoutString = getCookie(`${layoutId}-${item}`);
     const defaultLayout = defaultLayoutString
       ? (JSON.parse(defaultLayoutString) as ResizableLayoutSchema)
       : undefined;
@@ -44,7 +44,7 @@ export type Group = {
 
 export const LAYOUT_GROUP_IDS: Record<Layout, string[]> = {
   default: ['root', 'main', 'preview-layer'],
-  media: ['root', 'main'],
+  media: ['root', 'main', 'preview-layer'],
   inspector: ['root', 'main', 'media-preview'],
   'vertical-preview': ['root', 'main', 'media-layer'],
 };
@@ -66,24 +66,24 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
             {
               type: 'panel',
               id: 'media',
-              component: DefaultPanel,
+              component: () => <DefaultPanel id="Media" />,
             },
             {
               type: 'panel',
               id: 'preview',
-              component: DefaultPanel,
+              component: () => <DefaultPanel id="Preview" />,
             },
             {
               type: 'panel',
               id: 'layer',
-              component: DefaultPanel,
+              component: () => <DefaultPanel id="Layer" />,
             },
           ],
         },
         {
           type: 'panel',
           id: 'timeline',
-          component: DefaultPanel,
+          component: () => <DefaultPanel id="Timeline" />,
         },
       ],
     },
@@ -98,7 +98,7 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
         {
           type: 'panel',
           id: 'media',
-          component: DefaultPanel,
+          component: () => <DefaultPanel id="Media" />,
         },
         {
           type: 'group',
@@ -115,19 +115,19 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
                 {
                   type: 'panel',
                   id: 'preview',
-                  component: DefaultPanel,
+                  component: () => <DefaultPanel id="Preview" />,
                 },
                 {
                   type: 'panel',
                   id: 'layer',
-                  component: DefaultPanel,
+                  component: () => <DefaultPanel id="Layer" />,
                 },
               ],
             },
             {
               type: 'panel',
               id: 'timeline',
-              component: DefaultPanel,
+              component: () => <DefaultPanel id="Timeline" />,
             },
           ],
         },
@@ -156,26 +156,26 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
                 {
                   type: 'panel',
                   id: 'media',
-                  component: DefaultPanel,
+                  component: () => <DefaultPanel id="Media" />,
                 },
                 {
                   type: 'panel',
                   id: 'preview',
-                  component: DefaultPanel,
+                  component: () => <DefaultPanel id="Preview" />,
                 },
               ],
             },
             {
               type: 'panel',
               id: 'timeline',
-              component: DefaultPanel,
+              component: () => <DefaultPanel id="Timeline" />,
             },
           ],
         },
         {
           type: 'panel',
           id: 'layer',
-          component: DefaultPanel,
+          component: () => <DefaultPanel id="Layer" />,
         },
       ],
     },
@@ -202,26 +202,26 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
                 {
                   type: 'panel',
                   id: 'media',
-                  component: DefaultPanel,
+                  component: () => <DefaultPanel id="Media" />,
                 },
                 {
                   type: 'panel',
                   id: 'layer',
-                  component: DefaultPanel,
+                  component: () => <DefaultPanel id="Layer" />,
                 },
               ],
             },
             {
               type: 'panel',
               id: 'timeline',
-              component: DefaultPanel,
+              component: () => <DefaultPanel id="Timeline" />,
             },
           ],
         },
         {
           type: 'panel',
           id: 'preview',
-          component: DefaultPanel,
+          component: () => <DefaultPanel id="Preview" />,
         },
       ],
     },
