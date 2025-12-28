@@ -1,51 +1,35 @@
 'use client';
+import React, { useMemo, useState } from 'react';
+import { LayoutContext, createLayoutStore } from '@/stores/ui/panels';
+import { Layout as ResizableLayoutSchema } from 'react-resizable-panels';
+import { ResizableLayout } from './resizable-layout';
+import { Layout, LAYOUT_PANELS } from '@/stores/ui/layouts';
 
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '../ui/resizable';
+export function Editor({
+  defaultLayouts: storedLayouts,
+  selectedLayout,
+}: {
+  defaultLayouts: Record<
+    Layout,
+    Record<string, ResizableLayoutSchema | undefined>
+  >;
+  selectedLayout: Layout | undefined;
+}) {
+  const [store] = useState(() =>
+    createLayoutStore(storedLayouts, selectedLayout)
+  );
 
-export function Editor() {
+  const state = useMemo(() => store.getState(), [store]);
+  const { defaultLayouts, activeLayout } = state;
+  const root = useMemo(() => LAYOUT_PANELS[activeLayout].root, [activeLayout]);
+  const layouts = useMemo(
+    () => defaultLayouts[activeLayout],
+    [defaultLayouts, activeLayout]
+  );
+
   return (
-    <ResizablePanelGroup orientation="horizontal" className="w-full rounded-lg">
-      <ResizablePanel>
-        <div className="flex h-full items-center justify-center p-6 bg-muted rounded-lg">
-          One
-        </div>
-      </ResizablePanel>
-
-      <ResizableHandle />
-
-      <ResizablePanel>
-        <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel>
-            <ResizablePanelGroup orientation="horizontal">
-              <ResizablePanel>
-                <div className="flex h-full items-center justify-center p-6 bg-muted rounded-lg">
-                  <span className="font-semibold">Two</span>
-                </div>
-              </ResizablePanel>
-
-              <ResizableHandle />
-
-              <ResizablePanel>
-                <div className="flex h-full items-center justify-center p-6 bg-muted rounded-lg">
-                  <span className="font-semibold">Three</span>
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ResizablePanel>
-
-          <ResizableHandle />
-
-          <ResizablePanel>
-            <div className="flex h-full items-center justify-center p-6 bg-muted rounded-lg">
-              <span className="font-semibold">Four</span>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+    <LayoutContext.Provider value={state}>
+      <ResizableLayout root={root} layouts={layouts} />
+    </LayoutContext.Provider>
   );
 }
