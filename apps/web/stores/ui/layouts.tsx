@@ -1,3 +1,4 @@
+import { Preview } from '@/components/editor/preview';
 import { mapToObject } from '@/lib/utils';
 import { Layout as ResizableLayoutSchema } from 'react-resizable-panels';
 
@@ -71,7 +72,7 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
             {
               type: 'panel',
               id: 'preview',
-              component: () => <DefaultPanel id="Preview" />,
+              component: Preview,
             },
             {
               type: 'panel',
@@ -115,7 +116,7 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
                 {
                   type: 'panel',
                   id: 'preview',
-                  component: () => <DefaultPanel id="Preview" />,
+                  component: Preview,
                 },
                 {
                   type: 'panel',
@@ -161,7 +162,7 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
                 {
                   type: 'panel',
                   id: 'preview',
-                  component: () => <DefaultPanel id="Preview" />,
+                  component: Preview,
                 },
               ],
             },
@@ -221,7 +222,7 @@ export const LAYOUT_PANELS: Record<Layout, { root: Group }> = {
         {
           type: 'panel',
           id: 'preview',
-          component: () => <DefaultPanel id="Preview" />,
+          component: Preview,
         },
       ],
     },
