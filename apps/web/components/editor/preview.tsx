@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { EditorPanel } from './editor-panel';
 import { useSize } from '@/hooks/useSize';
-import { PreviewRenderer } from '@/renderer/PreviewRenderer';
+import { Renderer } from '@/renderer/Renderer';
 
 export function Preview() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,7 +30,7 @@ export function Preview() {
   }, [size]);
 
   const isPreviewInitialized = useRef(false);
-  const renderer = useRef<PreviewRenderer | null>(null);
+  const renderer = useRef<Renderer | null>(null);
 
   useEffect(() => {
     if (isPreviewInitialized.current || !canvasRef.current) {
@@ -38,7 +38,7 @@ export function Preview() {
     }
 
     isPreviewInitialized.current = true;
-    renderer.current = new PreviewRenderer(canvasRef.current);
+    renderer.current = new Renderer(canvasRef.current);
   }, []);
 
   return (
