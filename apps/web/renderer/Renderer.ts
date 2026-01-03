@@ -16,8 +16,7 @@ export class Renderer {
   }
 
   private async setupVideo() {
-    const video = await fetch('/test-video.mp4');
-    const videoBlob = await video.blob();
+    const dataUri = '/test-video.mp4';
 
     const decoder = new VideoDecoder({
       output: (frame) => {
@@ -28,7 +27,6 @@ export class Renderer {
       },
     });
 
-    const dataUri = URL.createObjectURL(videoBlob);
     const demuxer = new MP4Demuxer(dataUri, {
       onConfig: (config) => {
         decoder.configure(config);
@@ -95,9 +93,16 @@ class MP4Demuxer {
     };
 
     const fileSink = new MP4FileSink(this.file, this.callbacks.onEndOfStream);
-    fetch(dataUri).then((response) => {
-      response.body?.pipeTo(new WritableStream(fileSink, { highWaterMark: 2 }));
-    });
+
+    fetch(dataUri)
+      .then((response) => {
+        response.body?.pipeTo(
+          new WritableStream(fileSink, { highWaterMark: 2 })
+        );
+      })
+      .catch((error) => {
+        console.error('MP4Demuxer error', error);
+      });
   }
 
   private onReady(info: MP4Box.Movie) {
@@ -113,6 +118,9 @@ class MP4Demuxer {
       codedWidth: track.video?.width,
       description: this.getDescription(track) as AllowSharedBufferSource,
     });
+
+    this.file.setExtractionOptions(track.id);
+    this.file.start();
   }
 
   private onSamples(_id: number, _user: unknown, samples: MP4Box.Sample[]) {
@@ -140,14 +148,15 @@ class MP4Demuxer {
     }
 
     for (const entry of trak.mdia.minf.stbl.stsd.entries) {
-      console.log(entry);
-      const box: MP4Box.Box | undefined = entry.boxes?.[0];
+      const boxEntry = entry as MP4Box.VisualSampleEntry;
+      const box: MP4Box.Box | undefined =
+        boxEntry.avcC || boxEntry.hvcC || boxEntry.vpcC || boxEntry.av1C;
 
       if (box) {
         const stream = new MP4Box.DataStream(
           undefined,
           0,
-          MP4Box.DataStream.ENDIANNESS
+          MP4Box.Endianness.BIG_ENDIAN
         );
         box.write(stream);
         return new Uint8Array(stream.buffer, 8); // Remove the box header.
@@ -175,7 +184,7 @@ class MP4FileSink {
     this.file.appendBuffer(buffer);
   }
 
-  close() {
+  public close() {
     this.file.flush();
     this.onEndOfStream();
   }
