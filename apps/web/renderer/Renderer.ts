@@ -5,6 +5,7 @@ export class Renderer {
   private ctx: CanvasRenderingContext2D;
 
   private pendingFrame: VideoFrame | null = null;
+  private trackInfo: MP4Box.Track | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -29,6 +30,11 @@ export class Renderer {
 
     const demuxer = new MP4Demuxer(dataUri, {
       onConfig: (config) => {
+        // Set canvas dimensions to match video
+        if (config.codedWidth && config.codedHeight) {
+          this.canvas.width = config.codedWidth;
+          this.canvas.height = config.codedHeight;
+        }
         decoder.configure(config);
       },
       onChunk: (chunk) => {
@@ -106,7 +112,17 @@ class MP4Demuxer {
   }
 
   private onReady(info: MP4Box.Movie) {
-    const track = info.videoTracks[0];
+    let track: MP4Box.Track | null = null;
+    for (const t of info.tracks) {
+      if (t && t.id == 1) {
+        track = t;
+        break;
+      }
+    }
+
+    if (!track && info.videoTracks && info.videoTracks.length > 0) {
+      track = info.videoTracks[0] || null;
+    }
 
     if (!track) {
       throw new Error('No video track found');
@@ -114,8 +130,8 @@ class MP4Demuxer {
 
     this.callbacks.onConfig({
       codec: track.codec.startsWith('vp08') ? 'vp8' : track.codec,
-      codedHeight: track.video?.height,
-      codedWidth: track.video?.width,
+      codedHeight: track.track_height || track.video?.height || 0,
+      codedWidth: track.track_width || track.video?.width || 0,
       description: this.getDescription(track) as AllowSharedBufferSource,
     });
 
@@ -132,8 +148,8 @@ class MP4Demuxer {
       this.callbacks.onChunk(
         new EncodedVideoChunk({
           type: sample.is_sync ? 'key' : 'delta',
-          timestamp: (1e6 * sample.cts) / sample.timescale,
-          duration: (1e6 * sample.duration) / sample.timescale,
+          timestamp: sample.dts, // Use DTS (Decode Time Stamp) instead of CTS
+          duration: sample.duration,
           data: sample.data,
         })
       );
